@@ -1,41 +1,43 @@
 import discord
+from discord.ext import commands
 from bot_logic import gen_pass
 
-# Переменная intents - хранит привилегии бота
 intents = discord.Intents.default()
-# Включаем привелегию на чтение сообщений
 intents.message_content = True
-# Создаем бота в переменной client и передаем все привелегии
-client = discord.Client(intents=intents)
 
+bot = commands.Bot(command_prefix='$', intents=intents)
 
-
-@client.event
+@bot.event
 async def on_ready():
-    print(f'We have logged in as {client.user}')
+    print(f'We have logged in as {bot.user}')
+
+@bot.command()
+async def hello(ctx):  # $hello
+    await ctx.send(f'Привет! как дела?)')
 
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
+@bot.command(name='дайПароль')
+async def password(ctx): # $password
+    await ctx.send(gen_pass(20))
+
+@bot.command()
+async def heh(ctx, count_heh = 5): # $heh 10
+    await ctx.send("he" * count_heh)
+
+@bot.event  
+async def on_message(message): # ловит все текстовые сообщения
     
-    if message.content.startswith('$hello'):
-        await message.channel.send("ну привет)")
+    if message.content == 'Привет':
+        await message.channel.send("Я рад тебя видеть")
 
-    elif message.content.startswith('!pass'):
-        await message.channel.send(gen_pass(20))
-       
-
-    elif message.content.startswith('$bye'):
-        await message.channel.send("до встречи, жаль, что ты уходишь ((")
-
-    elif 'pizza' in message.content:
-        await message.channel.send("кто сказал пицца?)")
-
-    else:
-        await message.channel.send(message.content)
+    if message.content.startswith("Привет"):
+        await message.reply("Рад тебя видеть снова!", mention_author=True)
 
 
+    # ответ человеку
+    await message.reply("Рад тебя видеть снова!", mention_author=True)        
+    
+    #Важно для работы команд!! 
+    await bot.process_commands(message)
 
-client.run("")
+bot.run("")
