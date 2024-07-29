@@ -12,7 +12,13 @@ bot = TeleBot(TOKEN)
 timer = 630 
 game_started = False
 end = False
-go_cleaner = False #Эта переменная отвечает за то, пойдет ли уборщик или нет
+go_cleaner = False
+cleaner_door_right = False
+cleaner_door_left = False
+cleaner_vine = False
+cleaner_guest = False
+cleaner_vent = False 
+cleaner_storage = True #Эти переменные отвечают за уборщика(cleaner_go за то пойдет он или нет а остально за то в какой комнате он)
 go_сrazy = False #А эта за психа.
 go_hoverboard = False #За ховерборд
 go_cyborg = False #КИБОРГ УБЫЙЦА
@@ -22,6 +28,7 @@ go_terminator = False #Терминатор, тссс🤫
 left_door_statement = True #Булевая переменная, отвечающая за состояние левой двери
 right_door_statement = False #Булевая переменная, отвечающая за состояние правой двери
 night = 1 #Эта переменная отвечает за счет ночей, нужно для того чтобы работали роботы
+
 @bot.message_handler(commands=["start"])
 def start(message):
     bot.send_message(message.chat.id, "Привет, я игровой хоррор бот, чтобы узнать мои комманды напиши /help.")
@@ -43,6 +50,15 @@ def menu(message):
 
 @bot.callback_query_handler(func=lambda call:True)
 def callback(call):
+    global cleaner_door_right
+    global cleaner_door_left
+    global cleaner_guest
+    global cleaner_vine
+    global cleaner_storage 
+    global game_started
+    global left_door_statement
+    global right_door_statement
+
     if call.message:
         if call.data == 'button_game':  
             markup = types.InlineKeyboardMarkup(row_width=2)
@@ -55,12 +71,8 @@ def callback(call):
             bot.send_photo(call.message.chat.id, open('./Images/Game/security_room.jpeg', 'rb'))
             bot.send_message(call.message.chat.id, 'Вы устроились охранником в баре где недавно появились ИИ роботы, интересно, почему после появления роботов у них появился такой спрос на охрану?\nВаша задача, охранять бар до 6 утра(бар открывается в это время), вы можете смотреть камеры и закрывать двери, вы работаете 7 ночей, а потом вас заменит на время другой охранник, удачи!', reply_markup=markup)
             time.sleep(10)
-            global game_started
-            global left_door_statement
-            global right_door_statement
+
             game_started = True
-            polling_timer.start()
-            polling_timings.start()
         
         elif call.data == 'button_profile':
             markup = types.InlineKeyboardMarkup(row_width=5)
@@ -117,7 +129,10 @@ def callback(call):
             markup = types.InlineKeyboardMarkup(row_width=1)
             item1 = types.InlineKeyboardButton('Назад->', callback_data='button_camera')
             markup.add(item1)
-            bot.send_photo(call.message.chat.id, open('./Images/Game/storage.jpeg', 'rb'))
+            if cleaner_storage == True:
+                bot.send_photo(call.message.chat.id, open('./Images/Game/storage_cleaner.png', 'rb'))
+            else:
+                bot.send_photo(call.message.chat.id, open('./Images/Game/storage.jpeg', 'rb'))
             bot.send_message(call.message.chat.id, 'Каморка уборщика', reply_markup=markup)
 
         #Камера у бара 
@@ -125,7 +140,10 @@ def callback(call):
             markup = types.InlineKeyboardMarkup(row_width=1)
             item1 = types.InlineKeyboardButton('Назад->', callback_data='button_camera')
             markup.add(item1)
-            bot.send_photo(call.message.chat.id, open('./Images/Game/vine_room.png', 'rb'))
+            if cleaner_vine == True:
+                bot.send_photo(call.message.chat.id, open('./Images/Game/vine_cleaner.png', 'rb'))
+            else:
+                bot.send_photo(call.message.chat.id, open('./Images/Game/vine_room.png', 'rb'))
             bot.send_message(call.message.chat.id, 'Бар', reply_markup=markup)
 
         #Камера в комнате гостей
@@ -164,12 +182,18 @@ def callback(call):
             if left_door_statement: #Дверь открыта
                 item1 = types.InlineKeyboardButton('Закрыть', callback_data='change_left_door_statement')   
                 markup.add(item1, item2)
-                bot.send_photo(call.message.chat.id, open('./Images/Game/left_door_open.jpg', 'rb'))
+                if cleaner_door_left == True:
+                    bot.send_photo(call.message.chat.id, open('./Images/Game/left_door_cleaner.png', 'rb'))
+                else:
+                    bot.send_photo(call.message.chat.id, open('./Images/Game/left_door_open.jpg', 'rb'))
                 bot.send_message(call.message.chat.id, 'Дверь открыта.', reply_markup=markup)
             else: #Дверь открыта
                 item1 = types.InlineKeyboardButton('Открыть', callback_data='change_left_door_statement')   
                 markup.add(item1, item2)
-                bot.send_photo(call.message.chat.id, open('./Images/Game/left_door_closed.jpg', 'rb'))
+                if cleaner_door_left == True:
+                    bot.send_photo(call.message.chat.id, open('./Images/Game/left_door_cleaner.png', 'rb'))
+                else:
+                    bot.send_photo(call.message.chat.id, open('./Images/Game/left_door_closed.jpg', 'rb'))
                 bot.send_message(call.message.chat.id, 'Дверь закрыта.', reply_markup=markup)
 
         #Изменение состояния дверей
@@ -183,7 +207,10 @@ def callback(call):
             if left_door_statement: #Дверь открыта
                 item1 = types.InlineKeyboardButton('Закрыть', callback_data='change_left_door_statement')   
                 markup.add(item1, item2)
-                bot.send_photo(call.message.chat.id, open('./Images/Game/left_door_open.jpg', 'rb'))
+                if cleaner_door_left == True:
+                    bot.send_photo(call.message.chat.id, open('./Images/Game/left_door_cleaner.png', 'rb'))
+                else:
+                    bot.send_photo(call.message.chat.id, open('./Images/Game/left_door_open.jpg', 'rb'))
                 bot.send_message(call.message.chat.id, 'Дверь открыта.', reply_markup=markup)
             else: #Дверь открыта
                 item1 = types.InlineKeyboardButton('Открыть', callback_data='change_left_door_statement')   
@@ -200,7 +227,10 @@ def callback(call):
             if right_door_statement: #Дверь открыта
                 item1 = types.InlineKeyboardButton('Закрыть', callback_data='change_right_door_statement')   
                 markup.add(item1, item2)
-                bot.send_photo(call.message.chat.id, open('./Images/Game/right_door_open.jpg', 'rb'))
+                if cleaner_door_right == True:
+                    bot.send_photo(call.message.chat.id, open('./Images/Game/right_door_cleaner.png', 'rb'))
+                else:
+                    bot.send_photo(call.message.chat.id, open('./Images/Game/right_door_open.jpg', 'rb'))
                 bot.send_message(call.message.chat.id, 'Дверь открыта.', reply_markup=markup)
             else: #Дверь открыта
                 item1 = types.InlineKeyboardButton('Открыть', callback_data='change_right_door_statement')   
@@ -284,13 +314,28 @@ def callback(call):
             item2 = types.InlineKeyboardButton('Профиль', callback_data='button_profile')
             markup.add(item1,item2)
             bot.send_message(call.message.chat.id, 'Меню:', reply_markup=markup)
-
-
-   
-    if end == True:
-        bot.send_message(call.message.chat.id, f"{art.tprint('7:00 AM')}")
-        username = call.message.from_user.username
-        db_manager.add_coins_wins(username, "1", "10")
+        elif go_cleaner == True:
+            a = randint(1, 30)
+            #global cleaner_vent |я убрал вентиляцию покачто так как надо потом будет сделать её открытие и закрытие
+            if a == 29:
+                cleaner_door_left = True
+                cleaner_storage = False
+            elif a == 16:
+                cleaner_door_right = True
+                cleaner_storage = False
+            elif a == 12 or 17 or 30 or 24:
+                cleaner_guest = True
+                cleaner_storage = False
+            elif a == 1 or 4 or 9 or 10:
+                cleaner_vine = True
+                cleaner_storage = False
+            # else:
+            #     cleaner_vent = True
+            #     cleaner_storage = False
+        elif end == True:
+            bot.send_message(call.message.chat.id, f"{art.tprint('7:00 AM')}")
+            username = call.message.from_user.username
+            db_manager.add_coins_wins(username, "1", "10")
 
 
 def bot_thread():
@@ -304,7 +349,6 @@ def timer_thread():
     while True:
         time.sleep(1)
         timer -= 1
-        print(timer)
         if timer == 0:
             end = True
             break
@@ -342,12 +386,56 @@ def timing_thread():
                 else:
                     time.sleep(20)
                     go_cleaner = True
+            elif timer <= 330:
+                a = randint(1, 5)
+                if a == 2 or 3:
+                    go_cleaner = True
+                else:
+                    time.sleep(20)
+                    go_cleaner = True
+            elif timer <= 300:
+                a = randint(1, 5)
+                if a == 2 or 3:
+                    go_cleaner = True
+                else:
+                    time.sleep(20)
+                    go_cleaner = True
+            elif timer <= 270:
+                a = randint(1, 5)
+                if a == 2 or 3:
+                    go_cleaner = True
+                else:
+                    time.sleep(20)
+                    go_cleaner = True
+            elif timer <= 230:
+                a = randint(1, 5)
+                if a == 2 or 3:
+                    go_cleaner = True
+                else:
+                    time.sleep(20)
+                    go_cleaner = True
+            elif timer <= 170:
+                a = randint(1, 5)
+                if a == 2 or 3:
+                    go_cleaner = True
+                else:
+                    time.sleep(20)
+                    go_cleaner = True
+            elif timer <= 80:
+                a = randint(1, 5)
+                if a == 2 or 3:
+                    go_cleaner = True
+                else:
+                    time.sleep(20)
+                    go_cleaner = True
         
 if __name__ == '__main__':
     polling_thread = threading.Thread(target=bot_thread)
     polling_timer = threading.Thread(target=timer_thread)
     polling_timings = threading.Thread(target=timing_thread)
     polling_thread.start()
-    if game_started == True:
-        polling_timer.start()
-        polling_timings.start()
+    while True:
+        if game_started == True:
+            polling_timer.start()
+            polling_timings.start()
+        
